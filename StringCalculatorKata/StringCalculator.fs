@@ -45,7 +45,20 @@ module StringCalculator =
             inputNumbers.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
             |> Array.map int
 
+    let findNegativeValues (numbers: Numbers) =
+        let negativeValues = Array.filter (fun x -> x < 0) numbers
+        match Array.isEmpty negativeValues with
+        | true -> Ok numbers
+        | false -> Error negativeValues
+
     let sumNumbers = parseInput >> convertToNumbers >> Seq.sum
 
-    let Add (numbers: string): int =
-        sumNumbers numbers
+    let sum (numbersWithNegatives: Result<Numbers, int[]>) =
+        match numbersWithNegatives with
+        | Ok n -> Ok (Seq.sum n)
+        | Error e -> e |> Array.map string |> String.concat "," |> Error
+
+    let sumWithFilter = parseInput >> convertToNumbers >> findNegativeValues >> sum
+
+    let Add (numbers: string): Result<int, string> =
+        sumWithFilter numbers
