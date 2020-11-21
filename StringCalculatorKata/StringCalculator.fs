@@ -8,29 +8,51 @@ module StringCalculator =
     type Numbers = int []
     type InputWithDelimiters = Input * Delimiter []
 
-    let extractNumbers (numbers: Input) =
-        let startsWithCustomDelimeter = numbers.StartsWith "//"
+    type DelimiterType =
+        | Default
+        | OneCharacterLong
+        | MoreThanOneCharacterLong
 
-        match startsWithCustomDelimeter with
-        | true -> numbers.[4..numbers.Length]
-        | false -> numbers
-
-    let extractDelimiter (numbers: Input) =
-        let defaultDelimiters = [| ","; "\n" |]
-        let startsWithCustomDelimeter = numbers.StartsWith "//"
-
-        match startsWithCustomDelimeter with
+    let findDelimiterType (numbers: Input) =
+        match numbers.StartsWith "//" with
+        | false -> Default
         | true ->
+            match numbers.Contains "[" && numbers.Contains "]" with
+            | false -> OneCharacterLong
+            | true -> MoreThanOneCharacterLong
+
+    let extractDelimiter (numbers: Input, delimiterType: DelimiterType) =
+        let defaultDelimiters = [| ","; "\n" |]
+
+        match delimiterType with
+        | Default -> defaultDelimiters
+        | OneCharacterLong ->
             let customDelimiter = [| string numbers.[2] |]
 
             Array.concat [| defaultDelimiters
                             customDelimiter |]
-        | false -> defaultDelimiters
+        | MoreThanOneCharacterLong ->
+            let delimiterStart = numbers.IndexOf "[" + 1
+            let delimiterEnd = numbers.IndexOf "]" - 1
+            let delimiter =
+                [| numbers.[delimiterStart..delimiterEnd] |]
 
+            Array.concat [| defaultDelimiters
+                            delimiter |]
+
+    let extractNumbers (numbers: Input, delimiterType: DelimiterType) =
+        match delimiterType with
+        | Default -> numbers
+        | OneCharacterLong -> numbers.[4..numbers.Length]
+        | MoreThanOneCharacterLong ->
+            let delimiterEnd = numbers.IndexOf "]" + 2
+            numbers.[delimiterEnd..numbers.Length]
 
     let parseInput (input: Input): InputWithDelimiters =
-        let numbers = extractNumbers input
-        let delimiters = extractDelimiter input
+        let delimiterType = findDelimiterType input
+        let numbers = extractNumbers (input, delimiterType)
+        let delimiters = extractDelimiter (input, delimiterType)
+
         (numbers, delimiters)
 
     let convertToNumbers (input: InputWithDelimiters): Numbers =
