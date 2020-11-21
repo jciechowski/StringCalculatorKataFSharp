@@ -47,18 +47,27 @@ module StringCalculator =
 
     let findNegativeValues (numbers: Numbers) =
         let negativeValues = Array.filter (fun x -> x < 0) numbers
+
         match Array.isEmpty negativeValues with
         | true -> Ok numbers
         | false -> Error negativeValues
 
-    let sumNumbers = parseInput >> convertToNumbers >> Seq.sum
-
-    let sum (numbersWithNegatives: Result<Numbers, int[]>) =
+    let sum (numbersWithNegatives: Result<Numbers, int []>) =
         match numbersWithNegatives with
-        | Ok n -> Ok (Seq.sum n)
-        | Error e -> e |> Array.map string |> String.concat "," |> Error
+        | Ok n -> Ok(Seq.sum n)
+        | Error e ->
+            e
+            |> Array.map string
+            |> String.concat ","
+            |> Error
 
-    let sumWithFilter = parseInput >> convertToNumbers >> findNegativeValues >> sum
+    let ignoreValuesGreaterThan1000 (numbers: Numbers) = Array.filter (fun x -> x < 1000) numbers
 
-    let Add (numbers: string): Result<int, string> =
-        sumWithFilter numbers
+    let sumWithFilter =
+        parseInput
+        >> convertToNumbers
+        >> ignoreValuesGreaterThan1000
+        >> findNegativeValues
+        >> sum
+
+    let Add (numbers: string): Result<int, string> = sumWithFilter numbers

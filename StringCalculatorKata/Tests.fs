@@ -46,3 +46,11 @@ let ``Passing numbers with a custom delimiter adds them correctly `` (input, exp
 let ``Cannot add negative values`` (input, expected) =
     let result = Add input
     Assert.Equal(Error expected, result)
+
+[<Theory>]
+[<InlineData("1000, 1", 1)>]
+[<InlineData("1002, 1", 1)>]
+[<InlineData("1001, 1000, 1", 1)>]
+let ``Ignore values greater than 1000`` (input, expected) =
+    let result = Add input
+    Assert.Equal(Ok expected, result)
