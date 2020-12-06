@@ -18,10 +18,10 @@ module StringCalculator =
         | false -> Default
         | true ->
             match numbers.Contains "[" && numbers.Contains "]" with
-            | false -> OneCharacterLong
             | true -> MoreThanOneCharacterLong
+            | false -> OneCharacterLong
 
-    let extractDelimiter (numbers: Input, delimiterType: DelimiterType) =
+    let extractDelimiters (numbers: Input, delimiterType: DelimiterType) =
         let defaultDelimiters = [| ","; "\n" |]
 
         match delimiterType with
@@ -32,26 +32,28 @@ module StringCalculator =
             Array.concat [| defaultDelimiters
                             customDelimiter |]
         | MoreThanOneCharacterLong ->
-            let delimiterStart = numbers.IndexOf "[" + 1
-            let delimiterEnd = numbers.IndexOf "]" - 1
-            let delimiter =
-                [| numbers.[delimiterStart..delimiterEnd] |]
+            let delimitersStart = numbers.IndexOf "["
+            let delimitersEnd = numbers.IndexOf "\n" - 1
+            let delimiters = numbers.[delimitersStart..delimitersEnd]
+
+            let customDelimiters =
+                delimiters.Split([| "["; "]" |], StringSplitOptions.RemoveEmptyEntries)
 
             Array.concat [| defaultDelimiters
-                            delimiter |]
+                            customDelimiters |]
 
     let extractNumbers (numbers: Input, delimiterType: DelimiterType) =
         match delimiterType with
         | Default -> numbers
         | OneCharacterLong -> numbers.[4..numbers.Length]
         | MoreThanOneCharacterLong ->
-            let delimiterEnd = numbers.IndexOf "]" + 2
+            let delimiterEnd = numbers.LastIndexOf "]" + 2
             numbers.[delimiterEnd..numbers.Length]
 
     let parseInput (input: Input): InputWithDelimiters =
         let delimiterType = findDelimiterType input
         let numbers = extractNumbers (input, delimiterType)
-        let delimiters = extractDelimiter (input, delimiterType)
+        let delimiters = extractDelimiters (input, delimiterType)
 
         (numbers, delimiters)
 

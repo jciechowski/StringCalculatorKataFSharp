@@ -57,6 +57,14 @@ let ``Ignore values greater than 1000`` (input, expected) =
 
 [<Theory>]
 [<InlineData("//[***]\n1***2***3", 6)>]
+[<InlineData("//[!!]\n1!!2!!3!!4", 10)>]
 let ``Delimiters can be of any length`` (input, expected) =
+    let result = Add input
+    Assert.Equal(Ok expected, result)
+
+[<Theory>]
+[<InlineData("//[*][%]\n1*2%3", 6)>]
+[<InlineData("//[!!][..]\n1!!2..3", 6)>]
+let ``Multiple delimiters can be passed at once`` (input, expected) =
     let result = Add input
     Assert.Equal(Ok expected, result)
